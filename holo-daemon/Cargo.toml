@@ -49,6 +49,7 @@ holo-system = { path = "../holo-system", optional = true }
 holo-utils = { path = "../holo-utils" }
 holo-vrrp = { path = "../holo-vrrp", optional = true  }
 holo-yang = { path = "../holo-yang" }
+yaml-rust2 = "0.10.4"
 
 [build-dependencies]
 rustc_tools_util.workspace = true
@@ -107,3 +108,7 @@ io_uring = ["dep:tokio-uring"]
 tokio_console = ["dep:console-subscriber"]
 yang3_bundled = ["yang3/bundled"]
 fastclick = ["holo-utils/fastclick"]
+
+[dev-dependencies]
+hex = "0.4.3"
+yaml-rust2 = "0.10.4"

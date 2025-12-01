@@ -11,6 +11,7 @@ mod open;
 mod route_refresh;
 mod update;
 
+mod rllmtest;
 use holo_bgp::neighbor::PeerType;
 use holo_bgp::packet::message::{
     DecodeCxt, EncodeCxt, Message, NegotiatedCapability,

@@ -21,7 +21,7 @@ members = [
   "holo-yang",
 ]
 exclude = ["fuzz"]
-default-members = ["holo-daemon"]
+default-members = ["holo-daemon", "holo-bfd", "holo-bgp"]
 resolver = "2"
 
 [workspace.package]
@@ -87,6 +87,7 @@ tonic-prost-build = "0.14"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 yang3 = { version = "0.18" }
+yaml-rust2 = { version = "0.10.4" }
 
 [workspace.metadata.spellcheck]
 config = "spellcheck.toml"

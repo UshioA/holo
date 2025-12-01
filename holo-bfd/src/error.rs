@@ -28,6 +28,7 @@ pub enum Error {
     InvalidFlags(PacketFlags),
     InvalidMyDiscriminator(u32),
     InvalidYourDiscriminator(u32),
+    InvalidDiagnosticCode(u8),
     AuthError,
 }
 
@@ -79,6 +80,9 @@ impl Error {
             Error::AuthError => {
                 warn!("{}", self);
             }
+            Error::InvalidDiagnosticCode(diag) => {
+                warn!(%diag, "{}", self);
+            }
         }
     }
 }
@@ -116,6 +120,9 @@ impl std::fmt::Display for Error {
             }
             Error::AuthError => {
                 write!(f, "failed to authenticate packet")
+            }
+            Error::InvalidDiagnosticCode(..) => {
+                write!(f, "received invalid diagnostic code")
             }
         }
     }

@@ -128,7 +128,7 @@ pub(crate) fn process_udp_packet(
 }
 
 // Checks whether the BFD packet is valid.
-fn validate_bfd_packet(packet: &Packet) -> Result<(), Error> {
+pub fn validate_bfd_packet(packet: &Packet) -> Result<(), Error> {
     if packet.version != Packet::VERSION {
         return Err(Error::VersionMismatch(packet.version));
     }
@@ -152,7 +152,6 @@ fn validate_bfd_packet(packet: &Packet) -> Result<(), Error> {
     if packet.flags.contains(PacketFlags::A) {
         return Err(Error::AuthError);
     }
-
     Ok(())
 }
 

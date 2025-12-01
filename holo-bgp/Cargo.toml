@@ -44,6 +44,8 @@ yang3 = { workspace = true, features = ["bundled"] }
 holo-bgp = { path = ".", features = ["testing", "deterministic"] }
 holo-protocol = { path = "../holo-protocol", features = ["testing"] }
 holo-utils = { path = "../holo-utils", features = ["testing"] }
+yaml-rust2.workspace = true
+hex = "0.4.3"
 
 [lints]
 workspace = true

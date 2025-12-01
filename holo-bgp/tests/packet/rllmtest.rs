@@ -1,47 +1,36 @@
-//
-// Copyright (c) The Holo Core Contributors
-//
-// SPDX-License-Identifier: MIT
-//
-
-// use std::sync::LazyLock as Lazy;
-
-// use holo_bfd::packet::{DecodeError, Packet, PacketFlags};
-use holo_bfd::events::validate_bfd_packet;
-use holo_bfd::packet::Packet;
 use std::path::Path;
-// use holo_protocol::assert_eq_hex;
-// use holo_utils::bfd::State;
+
+use holo_bgp::{
+    neighbor::PeerType,
+    packet::message::{DecodeCxt, Message as Packet, NegotiatedCapability},
+};
 use yaml_rust2::YamlLoader;
 fn test_correct_pass(bytes: &[u8]) -> Result<String, ()> {
-    let packet = Packet::decode(bytes);
+    let cxt = DecodeCxt {
+        peer_type: PeerType::Internal,
+        peer_as: 65550,
+        reject_as_sets: true,
+        capabilities: [NegotiatedCapability::FourOctetAsNumber].into(),
+    };
+    let packet = Packet::decode(bytes, &cxt);
     // packet should decode without error or panic
     if packet.is_err() {
         println!("!!Failed to decode packet: {:?}", packet);
-        return Err(());
-    }
-    let validate_result = validate_bfd_packet(&packet.as_ref().unwrap());
-    if validate_result.is_err() {
-        println!(
-            "!!Packet validation failed unexpectedly: {:?}",
-            validate_result
-        );
         return Err(());
     }
     Ok(format!("Decoded packet: {:?}", packet.unwrap()))
 }
 
 fn test_incorrect_fail(bytes: &[u8]) -> Result<String, ()> {
-    let packet = Packet::decode(bytes);
+    let cxt = DecodeCxt {
+        peer_type: PeerType::Internal,
+        peer_as: 65550,
+        reject_as_sets: true,
+        capabilities: [NegotiatedCapability::FourOctetAsNumber].into(),
+    };
+    let packet = Packet::decode(bytes, &cxt);
     // packet should fail to decode
     if packet.is_ok() {
-        let validate_result = validate_bfd_packet(&packet.as_ref().unwrap());
-        if validate_result.is_err() {
-            return Ok(format!(
-                "Packet validation failed as expected: {:?}",
-                validate_result
-            ));
-        }
         println!(
             "!!Unexpected decoded packet: {:?}",
             packet.as_ref().unwrap()

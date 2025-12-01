@@ -89,6 +89,10 @@ pub enum DecodeError {
     IncompletePacket,
     InvalidVersion(u8),
     InvalidPacketLength(u8),
+    InvalidDetectMult(u8),
+    InvalidMyDiscriminator(u32),
+    InvalidYourDiscriminator(u32),
+    InvalidFlags(PacketFlags),
     ReadOutOfBounds,
 }
 
@@ -124,6 +128,7 @@ impl Packet {
     // Decodes BFD packet from a bytes buffer.
     pub fn decode(data: &[u8]) -> Result<Self, DecodeError> {
         let mut buf = Bytes::copy_from_slice(data);
+        // RFC 5880 6.8.6: If the packet is discarded according to these rules, processing of the packet MUST cease at that point.
 
         // Validate the packet length.
         if data.len() < Self::MANDATORY_SECTION_LEN as _ {
@@ -139,13 +144,34 @@ impl Packet {
         let diag = first_byte & 0x0F;
         let state = State::from_u8(sec_byte >> 6).unwrap();
         let flags = PacketFlags::from_bits_truncate(sec_byte & 0x3F);
+        if flags.contains(PacketFlags::M) {
+            return Err(DecodeError::InvalidFlags(flags));
+        }
         let detect_mult = buf.try_get_u8()?;
+
+        // if detect_mult == 0 {
+        //     return Err(DecodeError::InvalidDetectMult(detect_mult));
+        // }
+
         let length = buf.try_get_u8()?;
-        if length != Self::MANDATORY_SECTION_LEN {
+        if length < Self::MANDATORY_SECTION_LEN
+            || (length as usize) > data.len()
+        // Sanity check
+        {
             return Err(DecodeError::InvalidPacketLength(length));
         }
         let my_discr = buf.try_get_u32()?;
+
+        if my_discr == 0 {
+            return Err(DecodeError::InvalidVersion(my_discr as u8));
+        }
+
         let your_discr = buf.try_get_u32()?;
+
+        if your_discr == 0 && !matches!(state, State::Down | State::AdminDown) {
+            return Err(DecodeError::InvalidYourDiscriminator(your_discr));
+        }
+
         let desired_min_tx = buf.try_get_u32()?;
         let req_min_rx = buf.try_get_u32()?;
         let req_min_echo_rx = buf.try_get_u32()?;
@@ -183,6 +209,18 @@ impl std::fmt::Display for DecodeError {
             }
             DecodeError::ReadOutOfBounds => {
                 write!(f, "attempt to read out of bounds")
+            }
+            DecodeError::InvalidDetectMult(detect_mult) => {
+                write!(f, "Invalid Detect Mult: {detect_mult}")
+            }
+            DecodeError::InvalidMyDiscriminator(my_discr) => {
+                write!(f, "Invalid My Discriminator: {my_discr}")
+            }
+            DecodeError::InvalidYourDiscriminator(your_discr) => {
+                write!(f, "Invalid Your Discriminator: {your_discr}")
+            }
+            DecodeError::InvalidFlags(flags) => {
+                write!(f, "Invalid Flags: {flags:?}")
             }
         }
     }
